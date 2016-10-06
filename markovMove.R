@@ -12,6 +12,21 @@ computeProbabilities <- function(observations, previousProbabilities) {
   #observations = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc', 'position of tourist 1', 'position of tourist 2', 'position of player')
   #previousProbabilities = 'the vector returned by computeProbabilities at the previous time point
   
+  #If this is the first turn
+  if (length(previousProbabilities) != 40) {
+    previousProbabilities = vector(mode="double", length=40)
+    possibleWaterholes = 0
+    for (waterhole in 1:40) {
+      if (observations[[4]] == waterhole || observations[[5]] == waterhole) {
+        previousProbabilities[waterhole] = 0 #0 if a tourist is there
+        next()
+      }
+      previousProbabilities[waterhole] = 1 #1/watherholes without a tourist if no tourist
+      possibleWaterholes = possibleWaterholes + 1
+    }
+    previousProbabilities = sapply(previousProbabilities, function(x) x/possibleWaterholes)
+  }
+  
   probas = vector(mode="double", length=40)
   for (waterhole in 1:40) {
     #compute the proportional probability for each waterhole
