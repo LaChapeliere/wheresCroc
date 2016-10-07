@@ -43,9 +43,27 @@ computeProbabilities <- function(observations, previousProbabilities) {
   }
   
   probas = vector(mode="double", length=40)
-  for (waterhole in 1:40) {
-    #compute the proportional probability for each waterhole
-    probas[waterhole] = computeProbability(waterhole, observations, previousProbabilities)
+  #if a tourist was eaten this turn
+  if (observations[[4]] < 0) {
+    croc = -observations[[4]]
+    for (waterhole in 1:40) {
+      probas[waterhole] = 0
+    }
+    probas[croc] = 1
+  }
+  else if (observations[[5]] < 0) {
+    croc = -observations[[5]]
+    for (waterhole in 1:40) {
+      probas[waterhole] = 0
+    }
+    probas[croc] = 1
+  }
+  #Else
+  else {
+    for (waterhole in 1:40) {
+      #compute the proportional probability for each waterhole
+      probas[waterhole] = computeProbability(waterhole, observations, previousProbabilities)
+    }
   }
   
   totalProba = sum(probas)
