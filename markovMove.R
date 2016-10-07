@@ -1,10 +1,25 @@
+probabilityFromNormalDistribution <- function(value, mean, std) {
+  interval = 0.005
+  lowcut = value - interval
+  highcut = value + interval
+  
+  return(pnorm(highcut, mean = mean, sd = std) - pnorm(lowcut, mean = mean, sd = std))
+}
+
 computeProbability <- function(waterhole, observations, previousProbabilities) {
   #returns PROPORTIONAL probability that Croc is in a given waterhole
   #waterhole = 'the number of the waterhole'
   #observations = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc', 'position of tourist 1', 'position of tourist 2', 'position of player')
   #previousProbabilities = 'the vector returned by computeProbabilities at the previous time point
   
-  #return(waterhole)
+  #Computing the emission probilities for the provided set of observations
+  #The different observations are independent
+  #emission = vector(mode="double",length = 40)
+  #for (i in 1:40) {
+    
+  #}
+  
+  return(waterhole)
 }
 
 computeProbabilities <- function(observations, previousProbabilities) {
@@ -51,6 +66,25 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #print(positions)
   #print(edges)
   #print(probs)
+  
+  #Merging the two observations vectors
+  observations = vector(mode="double", length=6)
+  for (i in 1:3) {
+    observations[i] = readings[[i]]
+    observations[i + 3] = positions[[i]]
+  }
+  #Getting the previous probabilities
+  if (length(moveInfo["mem"]) == 0) {
+    moveInfo["mem"]["previousProbabilities"] = 0
+  }
+  previousProbabilities = moveInfo["mem"]["previousProbabilities"]
+  #Computing the probabilities of Croc being in each waterhole
+  probas = computeProbabilities(observations, previousProbabilities)
+  ################################
+  #END OF PROBABILITY CALCULATION#
+  ################################
+  
+  
   
   moveInfo[['moves']] = c(0, 0)
   return(moveInfo)
