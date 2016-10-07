@@ -6,36 +6,47 @@ probabilityFromNormalDistribution <- function(value, mean, std) {
   return(pnorm(highcut, mean = mean, sd = std) - pnorm(lowcut, mean = mean, sd = std))
 }
 
-computeProbability <- function(waterhole, observations, previousProbabilities, probs) {
+computeProbability <- function(waterhole, observations, previousProbabilities, probs, neighbors) {
   #returns PROPORTIONAL probability that Croc is in a given waterhole
   #waterhole = 'the number of the waterhole'
   #observations = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc', 'position of tourist 1', 'position of tourist 2', 'position of player')
   #previousProbabilities = 'the vector returned by computeProbabilities at the previous time point
+  #probs = list(salinity = matrix('mean and standard deviation of readings for salinity, each row is a waterhole, first column is mean, second column is standard deviation'), phosphate = matrix('mean and standard deviation of readings for phosphate, each row is a waterhole, first column is mean, second column is standard deviation'), nitrogen = matrix('mean and standard deviation of readings for nitrogen, each row is a waterhole, first column is mean, second column is standard deviation'))
+  #neighbors = 'definition of the network of waterhole by list of lists of neighbors
   
   #Computing the emission probability for the provided set of observations
   #The different observations are independent
-  emission = probabilityFromNormalDistribution(observations[1], probs["salinity"][i,1], probs["salinity"][i,2])
-  emission = emission * probabilityFromNormalDistribution(observations[2], probs["phosphate"][i,1], probs["phosphate"][i,2])
-  emission = emission * probabilityFromNormalDistribution(observations[3], probs["nitrogen"][i,1], probs["nitrogen"][i,2])
+  emission = probabilityFromNormalDistribution(observations[1], probs[["salinity"]][waterhole,1], probs[["salinity"]][waterhole,2])
+  emission = emission * probabilityFromNormalDistribution(observations[2], probs[["phosphate"]][waterhole,1], probs[["phosphate"]][waterhole,2])
+  emission = emission * probabilityFromNormalDistribution(observations[3], probs[["nitrogen"]][waterhole,1], probs[["nitrogen"]][waterhole,2])
 
+  #Compute the probability of Croc reaching the waterhole considering what we know of the previous state
+  moving = 0
+  for (n in length(neighbors[waterhole])) {
+    neighbor = neighbors[[waterhole]][n]
+    moving = moving + (1.0 / length(neighbors[[neighbor]])) * previousProbabilities[neighbor]
+  }
   
-  
-  return(waterhole)
+  return(emission * moving)
 }
 
-computeProbabilities <- function(observations, previousProbabilities, probs) {
+computeProbabilities <- function(observations, previousProbabilities, probs, neighbors) {
   #returns the vector of probabilities that Croc is in each waterhole
   #observations = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc', 'position of tourist 1', 'position of tourist 2', 'position of player')
   #previousProbabilities = 'the vector returned by computeProbabilities at the previous time point
+  #probs = list(salinity = matrix('mean and standard deviation of readings for salinity, each row is a waterhole, first column is mean, second column is standard deviation'), phosphate = matrix('mean and standard deviation of readings for phosphate, each row is a waterhole, first column is mean, second column is standard deviation'), nitrogen = matrix('mean and standard deviation of readings for nitrogen, each row is a waterhole, first column is mean, second column is standard deviation'))
+  #neighbors = 'definition of the network of waterhole by list of lists of neighbors
   
   #If this is the first turn
   if (length(previousProbabilities) != 40) {
     previousProbabilities = vector(mode="double", length=40)
     possibleWaterholes = 0
     for (waterhole in 1:40) {
-      if (observations[[4]] == waterhole || observations[[5]] == waterhole) {
-        previousProbabilities[waterhole] = 0 #0 if a tourist is there
-        next()
+      if (!is.na(observations[[4]]) && !is.na(observations[[5]])) {
+        if (observations[[4]] == waterhole || observations[[5]] == waterhole) {
+          previousProbabilities[waterhole] = 0 #0 if a tourist is there
+          next()
+        }
       }
       previousProbabilities[waterhole] = 1 #1/watherholes without a tourist if no tourist
       possibleWaterholes = possibleWaterholes + 1
@@ -63,7 +74,7 @@ computeProbabilities <- function(observations, previousProbabilities, probs) {
   else {
     for (waterhole in 1:40) {
       #compute the proportional probability for each waterhole
-      probas[waterhole] = computeProbability(waterhole, observations, previousProbabilities, probs)
+      probas[waterhole] = computeProbability(waterhole, observations, previousProbabilities, probs, neighbors)
     }
   }
   
@@ -86,6 +97,29 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #print(edges)
   #print(probs)
   
+  ###############################
+  #PRETREATEMENT OF NETWORK INFO#
+  ###############################
+  #neighbors is a list of list containing the neighbors for each waterhole
+  neighbors = list()
+  #Each waterhole is its own neighbor
+  for (i in 1:40) {
+    neighbors[i] = list(i)
+  }
+  for (edgeNum in 1:nrow(edges)) {
+    firstPoint = edges[edgeNum,1]
+    secondPoint = edges[edgeNum,2]
+    neighbors[[firstPoint]][length(neighbors[[firstPoint]]) + 1] = secondPoint
+    neighbors[[secondPoint]][length(neighbors[[secondPoint]]) + 1] <- firstPoint
+  }
+  ###################################
+  #END PRETREATEMENT OF NETWORK INFO#
+  ###################################
+  
+  
+  #########################
+  #PROBABILITY CALCULATION#
+  #########################
   #Merging the two observations vectors
   observations = vector(mode="double", length=6)
   for (i in 1:3) {
@@ -98,7 +132,7 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   }
   previousProbabilities = moveInfo["mem"]["previousProbabilities"]
   #Computing the probabilities of Croc being in each waterhole
-  probas = computeProbabilities(observations, previousProbabilities, probs)
+  probas = computeProbabilities(observations, previousProbabilities, probs, neighbors)
   ################################
   #END OF PROBABILITY CALCULATION#
   ################################
