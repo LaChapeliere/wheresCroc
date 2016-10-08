@@ -84,6 +84,23 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   return(probas)
 }
 
+makeMove <- function(probas, positions, edges) {
+  #probas: list of possibilities for each hole
+  #positions: croc, backpacker 1, bacpacker 2, ranger
+  #edges: relation of one hole to another
+  
+  #find max value of probability
+  maxProb = 0;
+  for (i in 1:40) {
+    if(maxProb < probas[i])
+      maxProb = i
+  }
+  
+  #find path to maxProb
+  
+  return(moveInfo)
+}
+
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #moveInfo = list(moves = c('the two moves to make'), mem = list('any info we want to store')
   #readings = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc')
@@ -96,7 +113,10 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #print(positions)
   #print(edges)
   #print(probs)
-  
+  options=getOptions(positions[3],edges)
+  print("Move 1 options (plus 0 for search):")
+  #print(options)
+  print(positions)
   ###############################
   #PRETREATEMENT OF NETWORK INFO#
   ###############################
@@ -138,8 +158,8 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   ################################
   
   #To Michael and Asa: Don't forget to ajust the probas if you check a waterhole, to pass the vector to the next turn
-  
-  
+  print(probas)
+  print(probas[2])
   moveInfo[['moves']] = c(0, 0)
   moveInfo[['mem']]["previousProbabilities"] = probas
   return(moveInfo)
