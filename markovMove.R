@@ -1,5 +1,5 @@
 probabilityFromNormalDistribution <- function(value, mean, std) {
-  interval = 0.005
+  interval = 0.5
   lowcut = value - interval
   highcut = value + interval
   
@@ -42,6 +42,7 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
     previousProbabilities = vector(mode="double", length=40)
     possibleWaterholes = 0
     for (waterhole in 1:40) {
+      print(waterhole)
       if (!is.na(observations[[4]]) && !is.na(observations[[5]])) {
         if (observations[[4]] == waterhole || observations[[5]] == waterhole) {
           previousProbabilities[waterhole] = 0 #0 if a tourist is there
@@ -51,19 +52,20 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
       previousProbabilities[waterhole] = 1 #1/watherholes without a tourist if no tourist
       possibleWaterholes = possibleWaterholes + 1
     }
+    print(previousProbabilities)
     previousProbabilities = sapply(previousProbabilities, function(x) x/possibleWaterholes)
   }
   
   probas = vector(mode="double", length=40)
   #if a tourist was eaten this turn
-  if (!is.nan(observations[[4]]) || observations[[4]] < 0) {
+  if (!is.nan(observations[[4]]) && observations[[4]] < 0) {
     croc = -observations[[4]]
     for (waterhole in 1:40) {
       probas[waterhole] = 0
     }
     probas[croc] = 1
   }
-  else if (!is.nan(observations[[5]]) || observations[[5]] < 0) {
+  else if (!is.nan(observations[[5]]) && observations[[5]] < 0) {
     croc = -observations[[5]]
     for (waterhole in 1:40) {
       probas[waterhole] = 0
