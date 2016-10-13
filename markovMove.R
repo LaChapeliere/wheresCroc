@@ -90,7 +90,7 @@ makeMove <- function(probas, positions, edges) {
   #probas: list of probabilities for each hole
   #positions: backpacker 1, bacpacker 2, ranger
   #edges: relation of one hole to another
-  
+  print("mulai path")
   #find max value of probability
   maxPos = 1
   maxVal = 0
@@ -104,12 +104,12 @@ makeMove <- function(probas, positions, edges) {
       minVal = probas[i]
   }
   
-  print (probas)
-  print(maxPos)
-  print(maxVal)
-  print(minVal)
+  #print(probas)
+  #print(maxPos)
+  #print(maxVal)
+  #print(minVal)
   
-  if(minVal == maxVal){
+  if(minVal == maxVal && minVal == 0){
     nmove = sample(getOptions(positions[3],edges),1)
     move = c(nmove,0)
     probas[nmove] = 0
@@ -124,23 +124,26 @@ makeMove <- function(probas, positions, edges) {
     
     #print(vec)
     #print(megraph)
-    #print(tmp$order)
-    #print(tmp$father)
-    #print(maxPos)
+    print(tmp$order)
+    print(tmp$father)
+    print(maxPos)
     #print(maxVal)
     goal = match(c(maxPos), tmp$order)
-    #print("goal")
-    #print(goal)
+    print("goal")
+    print(goal)
     #h <- graph(rbind(tmp$order, tmp$father[tmp$order])[,-1], directed=FALSE )
     #print(rbind(tmp$order, tmp$father[tmp$order]))
     #print(tmp$father[goal])
-    path = c()
-    j = 0
-    #while(positions[3] != tmp$father[goal]){
-    # path[j] = tmp$father[goal]
-    #goal = match(c(path[j]), tmp$order)
-    #}
-    #print(path)
+    #path = c()
+    j = 1
+    print("parent node")
+    print(as_ids(tmp$father[goal]))
+    print(tmp$father[goal])
+    while(positions[3] != as_ids(tmp$father[goal])){
+      path[j] = as_ids(tmp$father[goal])
+      goal = match(c(tmp$order), tmp$father[goal])
+    }
+    print(path)
     
     if(goal > 1){
       move = c(as_ids(tmp$order[2]), 0)
