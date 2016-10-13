@@ -85,17 +85,17 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
 }
 
 makeMove <- function(probas, positions, edges) {
-  #probas: list of possibilities for each hole
-  #positions: croc, backpacker 1, bacpacker 2, ranger
+  #probas: list of probabilities for each hole
+  #positions: backpacker 1, bacpacker 2, ranger
   #edges: relation of one hole to another
   
   #find max value of probability
-  maxProb = 0
+  maxProb = 1
   maxs = 0
   for (i in 1:40) {
-    print(maxProb)
-    print(probas[i])
-    if(maxProb < probas[i]){
+    #print(maxProb)
+    #print(probas[i])
+    if(!is.nan(probas[i]) && maxs < probas[i]){
       maxProb = i
       maxs = probas[i]
     }
@@ -109,10 +109,10 @@ makeMove <- function(probas, positions, edges) {
   
   #print(vec)
   #print(megraph)
-  print (probas)
-  print(tmp)
-  print(maxProb)
-  print(maxs)
+  #print (probas)
+  #print(tmp)
+  #print(maxProb)
+  #print(maxs)
   goal = match(c(maxProb), tmp$order)
   #print("goal")
   #print(goal)
@@ -124,11 +124,10 @@ makeMove <- function(probas, positions, edges) {
    # move = c(tmp$order[2], 0)
   #  probas[tmp$order[2]] = 0
   if(goal > 1){
-    print(tmp$order[2])
     #getOptions(positions[3],edges)
     #move = c(0,0)
-    move = c(tmp$order[2], 0)
-    probas[tmp$order[2]] = 0
+    move = c(as_ids(tmp$order[2]), 0)
+    probas[as_ids(tmp$order[2])] = 0
     #probas[tmp$order[3]] = 0
   }else{
     move = c(0,0)
@@ -136,7 +135,7 @@ makeMove <- function(probas, positions, edges) {
   }
   #print(move)
     
-  return(move)
+  return(list("move"=move, "probas"=probas))
 }
 
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
@@ -154,7 +153,7 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   options=getOptions(positions[3],edges)
   print("Move 1 options (plus 0 for search):")
   #print(options)
-  print(positions)
+  #print(positions)
   ###############################
   #PRETREATEMENT OF NETWORK INFO#
   ###############################
@@ -198,8 +197,9 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #To Michael and Asa: Don't forget to ajust the probas if you check a waterhole, to pass the vector to the next turn
   #print(probas)
   #print(probas[2])
-  moveInfo[['moves']] = makeMove(probas, positions, edges)
+  moveResult = makeMove(probas, positions, edges)
+  moveInfo[['moves']] = moveResult$move
   #moveInfo[['moves']] = c(0, 0)
-  moveInfo[['mem']][["previousProbabilities"]] = probas
+  moveInfo[['mem']][["previousProbabilities"]] = moveResult$probas
   return(moveInfo)
 }
