@@ -56,14 +56,14 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   
   probas = vector(mode="double", length=40)
   #if a tourist was eaten this turn
-  if (observations[[4]] < 0) {
+  if (!is.nan(observations[[4]]) || observations[[4]] < 0) {
     croc = -observations[[4]]
     for (waterhole in 1:40) {
       probas[waterhole] = 0
     }
     probas[croc] = 1
   }
-  else if (observations[[5]] < 0) {
+  else if (!is.nan(observations[[5]]) || observations[[5]] < 0) {
     croc = -observations[[5]]
     for (waterhole in 1:40) {
       probas[waterhole] = 0
@@ -90,15 +90,46 @@ makeMove <- function(probas, positions, edges) {
   #edges: relation of one hole to another
   
   #find max value of probability
-  maxProb = 0;
+  maxProb = 0
+  maxs = 0
   for (i in 1:40) {
-    if(maxProb < probas[i])
+    if(maxProb < probas[i]){
       maxProb = i
+      maxs = probas[i]
+    }
   }
   
   #find path to maxProb
+  #tmp = null
+  vec = as.vector(t(edges))
+  megraph = make_graph(vec, directed=FALSE)
+  tmp = graph.bfs(megraph, root=positions[3], neimode='all', order=TRUE, father=TRUE)
   
-  return(moveInfo)
+  #print(vec)
+  #print(megraph)
+  #print(tmp)
+  print(maxProb)
+  print(maxs)
+  goal = match(c(maxProb), tmp$order)
+  #print("goal")
+  #print(goal)
+  #if(goal >= 2){
+   # move = c(tmp$order[2], tmp$order[3])
+    #probas[tmp$order[2]] = 0
+    #probas[tmp$order[3]] = 0
+  #}else if(goal == 1){
+   # move = c(tmp$order[2], 0)
+  #  probas[tmp$order[2]] = 0
+  if(goal > 1){
+    move = c(tmp$order[2], 0)
+    probas[tmp$order[2]] = 0
+  }else{
+    move = c(0,0)
+    probas[positions[3]] = 0
+  }
+  #print(move)
+    
+  return(move)
 }
 
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
@@ -158,9 +189,10 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   ################################
   
   #To Michael and Asa: Don't forget to ajust the probas if you check a waterhole, to pass the vector to the next turn
-  print(probas)
-  print(probas[2])
-  moveInfo[['moves']] = c(0, 0)
+  #print(probas)
+  #print(probas[2])
+  moveInfo[['moves']] = makeMove(probas, positions, edges)
+  #moveInfo[['moves']] = c(0, 0)
   moveInfo[['mem']][["previousProbabilities"]] = probas
   return(moveInfo)
 }
