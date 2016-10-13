@@ -38,7 +38,7 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   #neighbors = 'definition of the network of waterhole by list of lists of neighbors
   
   #If this is the first turn
-  if (length(previousProbabilities) != 40) {
+  if (sum(previousProbabilities) == 0) {
     previousProbabilities = vector(mode="double", length=40)
     possibleWaterholes = 0
     for (waterhole in 1:40) {
@@ -148,9 +148,9 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   }
   #Getting the previous probabilities
   if (length(moveInfo[["mem"]]) == 0) {
-    moveInfo[["mem"]]["previousProbabilities"] = 0
+    moveInfo[["mem"]][["previousProbabilities"]] = vector(mode="double", length=40)
   }
-  previousProbabilities = moveInfo["mem"]["previousProbabilities"]
+  previousProbabilities = moveInfo[["mem"]][["previousProbabilities"]]
   #Computing the probabilities of Croc being in each waterhole
   probas = computeProbabilities(observations, previousProbabilities, probs, neighbors)
   ################################
@@ -161,6 +161,6 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   print(probas)
   print(probas[2])
   moveInfo[['moves']] = c(0, 0)
-  moveInfo[['mem']]["previousProbabilities"] = probas
+  moveInfo[['mem']][["previousProbabilities"]] = probas
   return(moveInfo)
 }
