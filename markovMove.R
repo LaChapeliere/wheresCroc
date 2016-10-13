@@ -93,6 +93,8 @@ makeMove <- function(probas, positions, edges) {
   maxProb = 0
   maxs = 0
   for (i in 1:40) {
+    print(maxProb)
+    print(probas[i])
     if(maxProb < probas[i]){
       maxProb = i
       maxs = probas[i]
@@ -107,7 +109,8 @@ makeMove <- function(probas, positions, edges) {
   
   #print(vec)
   #print(megraph)
-  #print(tmp)
+  print (probas)
+  print(tmp)
   print(maxProb)
   print(maxs)
   goal = match(c(maxProb), tmp$order)
@@ -121,8 +124,12 @@ makeMove <- function(probas, positions, edges) {
    # move = c(tmp$order[2], 0)
   #  probas[tmp$order[2]] = 0
   if(goal > 1){
+    print(tmp$order[2])
+    #getOptions(positions[3],edges)
+    #move = c(0,0)
     move = c(tmp$order[2], 0)
     probas[tmp$order[2]] = 0
+    #probas[tmp$order[3]] = 0
   }else{
     move = c(0,0)
     probas[positions[3]] = 0
