@@ -19,7 +19,7 @@ computeProbability <- function(waterhole, observations, previousProbabilities, p
   emission = probabilityFromNormalDistribution(observations[1], probs[["salinity"]][waterhole,1], probs[["salinity"]][waterhole,2])
   emission = emission * probabilityFromNormalDistribution(observations[2], probs[["phosphate"]][waterhole,1], probs[["phosphate"]][waterhole,2])
   emission = emission * probabilityFromNormalDistribution(observations[3], probs[["nitrogen"]][waterhole,1], probs[["nitrogen"]][waterhole,2])
-
+  
   #Compute the probability of Croc reaching the waterhole considering what we know of the previous state
   moving = 0
   for (n in length(neighbors[waterhole])) {
@@ -90,51 +90,67 @@ makeMove <- function(probas, positions, edges) {
   #edges: relation of one hole to another
   
   #find max value of probability
-  maxProb = 1
-  maxs = 0
+  maxPos = 1
+  maxVal = 0
+  minVal = 1
   for (i in 1:40) {
-    #print(maxProb)
-    #print(probas[i])
-    if(!is.nan(probas[i]) && maxs < probas[i]){
-      maxProb = i
-      maxs = probas[i]
+    if(!is.nan(probas[i]) && maxVal < probas[i]){
+      maxPos = i
+      maxVal = probas[i]
     }
+    if(!is.nan(probas[i]) && minVal > probas[i] && probas[i] != 0)
+      minVal = probas[i]
   }
   
-  #find path to maxProb
-  #tmp = null
-  vec = as.vector(t(edges))
-  megraph = make_graph(vec, directed=FALSE)
-  tmp = graph.bfs(megraph, root=positions[3], neimode='all', order=TRUE, father=TRUE)
+  print (probas)
+  print(maxPos)
+  print(maxVal)
+  print(minVal)
   
-  #print(vec)
-  #print(megraph)
-  #print (probas)
-  #print(tmp)
-  #print(maxProb)
-  #print(maxs)
-  goal = match(c(maxProb), tmp$order)
-  #print("goal")
-  #print(goal)
-  #if(goal >= 2){
-   # move = c(tmp$order[2], tmp$order[3])
-    #probas[tmp$order[2]] = 0
-    #probas[tmp$order[3]] = 0
-  #}else if(goal == 1){
-   # move = c(tmp$order[2], 0)
-  #  probas[tmp$order[2]] = 0
-  if(goal > 1){
-    #getOptions(positions[3],edges)
-    #move = c(0,0)
-    move = c(as_ids(tmp$order[2]), 0)
-    probas[as_ids(tmp$order[2])] = 0
-    #probas[tmp$order[3]] = 0
+  if(minVal == maxVal){
+    nmove = sample(getOptions(positions[3],edges),1)
+    move = c(nmove,0)
+    probas[nmove] = 0
+    print(nmove)
+    print("random")
   }else{
-    move = c(0,0)
-    probas[positions[3]] = 0
-  }
-  #print(move)
+    #find path to maxProb
+    #tmp = null
+    vec = as.vector(t(edges))
+    megraph = make_graph(vec, directed=FALSE)
+    tmp = graph.bfs(megraph, root=positions[3], neimode='all', order=TRUE, father=TRUE)
     
+    #print(vec)
+    #print(megraph)
+    #print(tmp$order)
+    #print(tmp$father)
+    #print(maxPos)
+    #print(maxVal)
+    goal = match(c(maxPos), tmp$order)
+    #print("goal")
+    #print(goal)
+    #h <- graph(rbind(tmp$order, tmp$father[tmp$order])[,-1], directed=FALSE )
+    #print(rbind(tmp$order, tmp$father[tmp$order]))
+    #print(tmp$father[goal])
+    path = c()
+    j = 0
+    #while(positions[3] != tmp$father[goal]){
+    # path[j] = tmp$father[goal]
+    #goal = match(c(path[j]), tmp$order)
+    #}
+    #print(path)
+    
+    if(goal > 1){
+      move = c(as_ids(tmp$order[2]), 0)
+      probas[as_ids(tmp$order[2])] = 0
+    }else{
+      move = c(0,0)
+      probas[positions[3]] = 0
+    }  
+    print("path")
+  }
+  print(move)
+  
   return(list("move"=move, "probas"=probas))
 }
 
@@ -144,7 +160,7 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #positions = c('position of tourist 1', 'position of tourist 2', 'position of player')
   #edges = matrix('edges paths between waterholes, first column is one extremity of the edge, second column is the other extremity, every row is one edge')
   #probs = list(salinity = matrix('mean and standard deviation of readings for salinity, each row is a waterhole, first column is mean, second column is standard deviation'), phosphate = matrix('mean and standard deviation of readings for phosphate, each row is a waterhole, first column is mean, second column is standard deviation'), nitrogen = matrix('mean and standard deviation of readings for nitrogen, each row is a waterhole, first column is mean, second column is standard deviation'))
-
+  
   #print(moveInfo)
   #print(readings)
   #print(positions)
