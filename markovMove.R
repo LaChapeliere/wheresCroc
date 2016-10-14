@@ -58,14 +58,14 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   
   probas = vector(mode="double", length=40)
   #if a tourist was eaten this turn
-  if (!is.nan(observations[[4]]) && observations[[4]] < 0) {
+  if (!is.na(observations[[4]]) && observations[[4]] < 0) {
     croc = -observations[[4]]
     for (waterhole in 1:40) {
       probas[waterhole] = 0
     }
     probas[croc] = 1
   }
-  else if (!is.nan(observations[[5]]) && observations[[5]] < 0) {
+  else if (!is.na(observations[[5]]) && observations[[5]] < 0) {
     croc = -observations[[5]]
     for (waterhole in 1:40) {
       probas[waterhole] = 0
@@ -126,28 +126,35 @@ makeMove <- function(probas, positions, edges) {
     #print(megraph)
     print(tmp$order)
     print(tmp$father)
+    print("goal")
     print(maxPos)
     #print(maxVal)
     goal = match(c(maxPos), tmp$order)
-    print("goal")
+    print("goal position")
     print(goal)
     #h <- graph(rbind(tmp$order, tmp$father[tmp$order])[,-1], directed=FALSE )
     #print(rbind(tmp$order, tmp$father[tmp$order]))
     #print(tmp$father[goal])
-    #path = c()
+    pathFound = c()
     j = 1
-    print("parent node")
+    #print("parent node")
     print(as_ids(tmp$father[goal]))
     print(tmp$father[goal])
-    while(positions[3] != as_ids(tmp$father[goal])){
-      path[j] = as_ids(tmp$father[goal])
-      goal = match(c(tmp$order), tmp$father[goal])
+    comp = as_ids(tmp$father[goal])
+    #print(comp[1])
+    while(positions[3] != comp){
+      pathFound[j] = comp
+      goal = match(c(comp), tmp$order)
+      print("goal pos")
+      print(goal)
+      comp = as_ids(tmp$father[goal])
+      print(pathFound)
     }
-    print(path)
+    print(pathFound)
     
     if(goal > 1){
-      move = c(as_ids(tmp$order[2]), 0)
-      probas[as_ids(tmp$order[2])] = 0
+      move = c(pathFound[j], 0)
+      probas[pathFound[j]] = 0
     }else{
       move = c(0,0)
       probas[positions[3]] = 0
