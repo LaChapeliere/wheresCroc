@@ -38,6 +38,8 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   #neighbors = 'definition of the network of waterhole by list of lists of neighbors
   
   #If this is the first turn
+  print("prev Prob")
+  print(sum(previousProbabilities))
   if (sum(previousProbabilities) == 0) {
     previousProbabilities = vector(mode="double", length=40)
     possibleWaterholes = 0
@@ -127,26 +129,20 @@ makeMove <- function(probas, positions, edges) {
     print(tmp$order)
     print("parent")
     print(tmp$father)
-    #print("distance")
-    #print(tmp$dist)
     print("goal")
     print(maxPos)
     #print(maxVal)
+    
+    #find the highest probability position in bfs
     goal = match(c(maxPos), tmp$order)
-    #print("goal position")
-    #print(goal)
-    #h <- graph(rbind(tmp$order, tmp$father[tmp$order])[,-1], directed=FALSE )
-    #print(rbind(tmp$order, tmp$father[tmp$order]))
-    #print(tmp$father[goal])
     pathFound = c()
-    #print("parent node")
-    #print(as_ids(tmp$father[goal]))
-    #print(tmp$father[goal])
+    #check if the goal is the same as ranger's position
     if(as_ids(tmp$order[goal]) == positions[3]){
       move = c(0,0)
       probas[positions[3]] = 0
-      print("cek saja")
+      print("check this hole")
     }else{
+      #do traceback from the goal to ranger
       comp = as_ids(tmp$father[tmp$order[goal]])
       #print(comp[1])
       pathFound[1] = maxPos
@@ -164,16 +160,19 @@ makeMove <- function(probas, positions, edges) {
       print(pathFound)
       
       if(length(pathFound) >= 2){
+        #if the path to the goal has more than 2 or more of nodes
         move = c(pathFound[j-1], pathFound[j-2])
-        print("2 langkah")
+        print("2 moves")
       }else if(length(pathFound) == 1){
+        #if ranger can access goal directly
         move = c(pathFound[j-1],0)
         probas[pathFound[j-1]] = 0
-        print("1 langkah dan cek")
+        print("1 move and check it")
       }else{
+        #if the pla
         move = c(0,0)
         probas[positions[3]] = 0
-        print("cek saja")
+        print("check the hole")
       }  
     }
       
