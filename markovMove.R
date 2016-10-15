@@ -90,77 +90,95 @@ makeMove <- function(probas, positions, edges) {
   #probas: list of probabilities for each hole
   #positions: backpacker 1, bacpacker 2, ranger
   #edges: relation of one hole to another
-  print("mulai path")
+  #print("mulai path")
   #find max value of probability
   maxPos = 1
   maxVal = 0
   minVal = 1
   for (i in 1:40) {
-    if(!is.nan(probas[i]) && maxVal < probas[i]){
+    if(!is.na(probas[i]) && maxVal < probas[i]){
       maxPos = i
       maxVal = probas[i]
     }
-    if(!is.nan(probas[i]) && minVal > probas[i] && probas[i] != 0)
+    if(!is.na(probas[i]) && minVal > probas[i] && probas[i] != 0)
       minVal = probas[i]
   }
-  
-  #print(probas)
-  #print(maxPos)
+  print("probas")
+  print(probas)
+  #print(positions)
   #print(maxVal)
   #print(minVal)
   
-  if(minVal == maxVal && minVal == 0){
-    nmove = sample(getOptions(positions[3],edges),1)
-    move = c(nmove,0)
-    probas[nmove] = 0
-    print(nmove)
-    print("random")
-  }else{
+  #if(minVal == maxVal && minVal == 0){
+   # nmove = sample(getOptions(positions[3],edges),1)
+    #move = c(nmove,0)
+    #probas[nmove] = 0
+    #print(nmove)
+    #print("random")
+  #}else{
     #find path to maxProb
-    #tmp = null
     vec = as.vector(t(edges))
     megraph = make_graph(vec, directed=FALSE)
-    tmp = graph.bfs(megraph, root=positions[3], neimode='all', order=TRUE, father=TRUE)
+    tmp = graph.bfs(megraph, root=positions[3], neimode='all', order=TRUE, father=TRUE, dist=TRUE)
     
     #print(vec)
     #print(megraph)
+    print("order")
     print(tmp$order)
+    print("parent")
     print(tmp$father)
+    #print("distance")
+    #print(tmp$dist)
     print("goal")
     print(maxPos)
     #print(maxVal)
     goal = match(c(maxPos), tmp$order)
-    print("goal position")
-    print(goal)
+    #print("goal position")
+    #print(goal)
     #h <- graph(rbind(tmp$order, tmp$father[tmp$order])[,-1], directed=FALSE )
     #print(rbind(tmp$order, tmp$father[tmp$order]))
     #print(tmp$father[goal])
     pathFound = c()
-    j = 1
     #print("parent node")
-    print(as_ids(tmp$father[goal]))
-    print(tmp$father[goal])
-    comp = as_ids(tmp$father[goal])
-    #print(comp[1])
-    while(positions[3] != comp){
-      pathFound[j] = comp
-      goal = match(c(comp), tmp$order)
-      print("goal pos")
-      print(goal)
-      comp = as_ids(tmp$father[goal])
-      print(pathFound)
-    }
-    print(pathFound)
-    
-    if(goal > 1){
-      move = c(pathFound[j], 0)
-      probas[pathFound[j]] = 0
-    }else{
+    #print(as_ids(tmp$father[goal]))
+    #print(tmp$father[goal])
+    if(as_ids(tmp$order[goal]) == positions[3]){
       move = c(0,0)
       probas[positions[3]] = 0
-    }  
-    print("path")
-  }
+      print("cek saja")
+    }else{
+      comp = as_ids(tmp$father[tmp$order[goal]])
+      #print(comp[1])
+      pathFound[1] = maxPos
+      j = 2
+      while(positions[3] != comp){
+        pathFound[j] = comp
+        temp = match(c(comp), tmp$order)
+        #print("temp pos")
+        #print(temp)
+        comp = as_ids(tmp$father[tmp$order[temp]])
+        j = j + 1
+        #print(pathFound)
+      }
+      print("pathFound") 
+      print(pathFound)
+      
+      if(length(pathFound) >= 2){
+        move = c(pathFound[j-1], pathFound[j-2])
+        print("2 langkah")
+      }else if(length(pathFound) == 1){
+        move = c(pathFound[j-1],0)
+        probas[pathFound[j-1]] = 0
+        print("1 langkah dan cek")
+      }else{
+        move = c(0,0)
+        probas[positions[3]] = 0
+        print("cek saja")
+      }  
+    }
+      
+  #}
+  print("move")
   print(move)
   
   return(list("move"=move, "probas"=probas))
