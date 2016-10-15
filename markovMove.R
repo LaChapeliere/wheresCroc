@@ -183,6 +183,136 @@ makeMove <- function(probas, positions, edges) {
   return(list("move"=move, "probas"=probas))
 }
 
+#Local Search Movement
+makeMoveLocalSearch <- function(probas, positions, edges) {
+  #probas: list of possibilities for each hole
+  #positions: croc, backpacker 1, bacpacker 2, ranger
+  #edges: relation of one hole to another
+  
+  #find max value of probability
+  
+  #Check if the probas not NAN
+  if(all(!is.nan(probas)))
+  {
+    maxProb = 0
+    maxProb2 = 0
+    tempData = 100
+    flag = 0
+    
+    options=getOptions(positions[3],edges)
+    
+    ######Move for the First
+    for(i in 1:length(options))
+    {
+      #Find the best movement for ranger from the Option ranger have it.
+      if(probas[options[i]] != 0 && !is.nan(probas[options[i]]))
+      {
+        if(maxProb < probas[options[i]])
+          maxProb = options[i]
+        flag = flag + 1
+      }
+    }
+    # If all the value of probabilty of Ranger option movement become 0
+    # find the highest probability in the plots
+    if(flag == 0)
+    {
+      highProbabs = 0
+      for(j in 1:40)
+      {
+        if(highProbabs < probas[j] && j != positions[3])
+          highProbabs = j
+      }
+      
+      #Find the fastest way from the option ranger has to the high probability waterhole
+      tempI = 0
+      for(i in 1:length(options))
+      {
+        if(options[i] != positions[3])
+        {
+          tempValue = abs(highProbabs-options[i])
+          
+          if(tempValue < tempData)
+          {
+            tempData = tempValue
+            tempI = i
+          }
+        }
+      }
+      maxProb = options[tempI]
+      
+    }
+    
+    ########Move for the second
+    flag2 = 0
+    tempData = 100
+    # get the option movement from the first movement
+    optionsStep2 = getOptions(maxProb,edges)
+    
+    #Find the best movement for ranger from the Option ranger have it.
+    for(i in 1:length(optionsStep2))
+    {
+      if(probas[optionsStep2[i]] != 0 && !is.nan(optionsStep2[options[i]]))
+      {
+        if(maxProb2 < probas[optionsStep2[i]])
+          maxProb2 = optionsStep2[i]
+        flag2 = flag2 + 1
+      }
+    }
+    
+    # If all the value of probabilty of Ranger option movement become 0
+    # find the highest probability in the plots
+    if(flag2 == 0)
+    {
+      highProbabs = 0
+      for(j in 1:40)
+      {
+        if(highProbabs < probas[j] && j != positions[3])
+          highProbabs = j
+      }
+      
+      #Find the fastest way from the option ranger has to the high probability waterhole
+      tempI = 0
+      for(i in 1:length(optionsStep2))
+      {
+        if(optionsStep2[i] != maxProb)
+        {
+          tempValue = abs(highProbabs-optionsStep2[i])
+          
+          if(tempValue < tempData)
+          {
+            tempData = tempValue
+            tempI = i
+          }
+        }
+      }
+      
+      maxProb2 = optionsStep2[tempI]
+      
+    }
+    
+    #Do counter for different movement for each turn
+    flagCheck <<- flagCheck + 1
+    
+    if(flagCheck %% 2 == 0)
+    {
+      move = c(maxProb,0)
+      probas[positions[3]] = 0
+    }
+    else
+    {
+      move = c(maxProb,maxProb2)
+    }
+    
+  }
+  else
+  {
+    
+    move = c(0,0)
+  }
+  
+  return(list("move"=move,"probas"=probas))
+}
+
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #moveInfo = list(moves = c('the two moves to make'), mem = list('any info we want to store')
   #readings = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc')
@@ -243,6 +373,10 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #print(probas)
   #print(probas[2])
   moveResult = makeMove(probas, positions, edges)
+  
+  #Local Search Move
+  #moveResult = makeMoveLocalSearch(probas, positions, edges)
+  
   moveInfo[['moves']] = moveResult$move
   #moveInfo[['moves']] = c(0, 0)
   moveInfo[['mem']][["previousProbabilities"]] = moveResult$probas
