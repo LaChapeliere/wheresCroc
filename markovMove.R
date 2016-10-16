@@ -6,6 +6,9 @@ probabilityFromNormalDistribution <- function(value, mean, std) {
   return(pnorm(highcut, mean = mean, sd = std) - pnorm(lowcut, mean = mean, sd = std))
 }
 
+#Set the flagcheck to 0, use counter the turn
+flagCheck <<- 0
+
 computeProbability <- function(waterhole, observations, previousProbabilities, probs, neighbors) {
   #returns PROPORTIONAL probability that Croc is in a given waterhole
   #waterhole = 'the number of the waterhole'
@@ -270,6 +273,7 @@ makeMoveLocalSearch <- function(probas, positions, edges) {
   
   return(list("move"=move,"probas"=probas))
 }
+
 
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #moveInfo = list(moves = c('the two moves to make'), mem = list('any info we want to store')
