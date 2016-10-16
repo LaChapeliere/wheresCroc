@@ -88,98 +88,56 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   return(probas)
 }
 
-makeMove <- function(probas, positions, edges) {
+#BFS-based Movement
+bfsBased <- function(probas, positions, edges) {
   #probas: list of probabilities for each hole
   #positions: backpacker 1, bacpacker 2, ranger
   #edges: relation of one hole to another
-  #print("mulai path")
+  
   #find max value of probability
   maxPos = 1
   maxVal = 0
-  minVal = 1
   for (i in 1:40) {
     if(!is.na(probas[i]) && maxVal < probas[i]){
       maxPos = i
       maxVal = probas[i]
     }
-    if(!is.na(probas[i]) && minVal > probas[i] && probas[i] != 0)
-      minVal = probas[i]
   }
-  print("probas")
-  print(probas)
-  #print(positions)
-  #print(maxVal)
-  #print(minVal)
   
-  #if(minVal == maxVal && minVal == 0){
-  # nmove = sample(getOptions(positions[3],edges),1)
-  #move = c(nmove,0)
-  #probas[nmove] = 0
-  #print(nmove)
-  #print("random")
-  #}else{
-  #find path to maxProb
+  #make path to all nodes using bfs
   vec = as.vector(t(edges))
   megraph = make_graph(vec, directed=FALSE)
   tmp = graph.bfs(megraph, root=positions[3], neimode='all', order=TRUE, father=TRUE, dist=TRUE)
   
-  #print(vec)
-  #print(megraph)
-  print("order")
-  print(tmp$order)
-  print("parent")
-  print(tmp$father)
-  print("goal")
-  print(maxPos)
-  #print(maxVal)
-  
   #find the highest probability position in bfs
   goal = match(c(maxPos), tmp$order)
   pathFound = c()
-  #check if the goal is the same as ranger's position
+  
+  #if the goal is the same as ranger's position, check the waterhole
   if(as_ids(tmp$order[goal]) == positions[3]){
     move = c(0,0)
     probas[positions[3]] = 0
-    print("check this hole")
   }else{
-    #do traceback from the goal to ranger
+    #traceback from the goal to ranger
     comp = as_ids(tmp$father[tmp$order[goal]])
-    #print(comp[1])
     pathFound[1] = maxPos
     j = 2
     while(positions[3] != comp){
       pathFound[j] = comp
       temp = match(c(comp), tmp$order)
-      #print("temp pos")
-      #print(temp)
       comp = as_ids(tmp$father[tmp$order[temp]])
       j = j + 1
-      #print(pathFound)
     }
-    print("pathFound") 
-    print(pathFound)
     
     if(length(pathFound) >= 2){
       #if the path to the goal has more than 2 or more of nodes
       move = c(pathFound[j-1], pathFound[j-2])
-      print("2 moves")
     }else if(length(pathFound) == 1){
       #if ranger can access goal directly
       move = c(pathFound[j-1],0)
       probas[pathFound[j-1]] = 0
-      print("1 move and check it")
-    }else{
-      #if the pla
-      move = c(0,0)
-      probas[positions[3]] = 0
-      print("check the hole")
-    }  
+    } 
   }
-  
-  #}
-  print("move")
-  print(move)
-  
   return(list("move"=move, "probas"=probas))
 }
 
@@ -372,7 +330,9 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #To Michael and Asa: Don't forget to ajust the probas if you check a waterhole, to pass the vector to the next turn
   #print(probas)
   #print(probas[2])
-  moveResult = makeMove(probas, positions, edges)
+  
+  #BFS-based Move
+  moveResult = bfsBased(probas, positions, edges)
   
   #Local Search Move
   #moveResult = makeMoveLocalSearch(probas, positions, edges)
