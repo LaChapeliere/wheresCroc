@@ -1,3 +1,11 @@
+#Our main function is named 'markovMove'
+
+#It can be run either with BFS-search for the move, or local search
+#To switch between the two options, comment/uncomment the corresponding lines at the end of the main function
+
+#Set the flagcheck to 0, use counter the turn
+flagCheck <<- 0
+
 probabilityFromNormalDistribution <- function(value, mean, std) {
   interval = 0.5
   lowcut = value - interval
@@ -5,9 +13,6 @@ probabilityFromNormalDistribution <- function(value, mean, std) {
   
   return(pnorm(highcut, mean = mean, sd = std) - pnorm(lowcut, mean = mean, sd = std))
 }
-
-#Set the flagcheck to 0, use counter the turn
-flagCheck <<- 0
 
 computeProbability <- function(waterhole, observations, previousProbabilities, probs, neighbors) {
   #returns PROPORTIONAL probability that Croc is in a given waterhole
@@ -41,13 +46,10 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
   #neighbors = 'definition of the network of waterhole by list of lists of neighbors
   
   #If this is the first turn
-  print("prev Prob")
-  print(sum(previousProbabilities))
   if (sum(previousProbabilities) == 0 || !is.nan(sum(previousProbabilities))) {
     previousProbabilities = vector(mode="double", length=40)
     possibleWaterholes = 0
     for (waterhole in 1:40) {
-      print(waterhole)
       if (!is.na(observations[[4]]) && !is.na(observations[[5]])) {
         if (observations[[4]] == waterhole || observations[[5]] == waterhole) {
           previousProbabilities[waterhole] = 0 #0 if a tourist is there
@@ -57,7 +59,6 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
       previousProbabilities[waterhole] = 1 #1/watherholes without a tourist if no tourist
       possibleWaterholes = possibleWaterholes + 1
     }
-    print(previousProbabilities)
     previousProbabilities = sapply(previousProbabilities, function(x) x/possibleWaterholes)
   }
   
@@ -93,9 +94,9 @@ computeProbabilities <- function(observations, previousProbabilities, probs, nei
 
 #BFS-based Movement
 bfsBased <- function(probas, positions, edges) {
-  #probas: list of probabilities for each hole
-  #positions: backpacker 1, bacpacker 2, ranger
-  #edges: relation of one hole to another
+  #probas = 'vector holding the probability distribution of Croc's position in the network'
+  #positions = c('position of tourist 1', 'position of tourist 2', 'position of player')
+  #edges = matrix('edges paths between waterholes, first column is one extremity of the edge, second column is the other extremity, every row is one edge')
   
   #find max value of probability
   maxPos = 1
@@ -146,9 +147,9 @@ bfsBased <- function(probas, positions, edges) {
 
 #Local Search Movement
 makeMoveLocalSearch <- function(probas, positions, edges) {
-  #probas: list of possibilities for each hole
-  #positions: croc, backpacker 1, bacpacker 2, ranger
-  #edges: relation of one hole to another
+  #probas = 'vector holding the probability distribution of Croc's position in the network'
+  #positions = c('position of tourist 1', 'position of tourist 2', 'position of player')
+  #edges = matrix('edges paths between waterholes, first column is one extremity of the edge, second column is the other extremity, every row is one edge')
   
   #find max value of probability
   
@@ -267,7 +268,6 @@ makeMoveLocalSearch <- function(probas, positions, edges) {
   }
   else
   {
-    
     move = c(0,0)
   }
   
@@ -281,16 +281,7 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #positions = c('position of tourist 1', 'position of tourist 2', 'position of player')
   #edges = matrix('edges paths between waterholes, first column is one extremity of the edge, second column is the other extremity, every row is one edge')
   #probs = list(salinity = matrix('mean and standard deviation of readings for salinity, each row is a waterhole, first column is mean, second column is standard deviation'), phosphate = matrix('mean and standard deviation of readings for phosphate, each row is a waterhole, first column is mean, second column is standard deviation'), nitrogen = matrix('mean and standard deviation of readings for nitrogen, each row is a waterhole, first column is mean, second column is standard deviation'))
-  
-  #print(moveInfo)
-  #print(readings)
-  #print(positions)
-  #print(edges)
-  #print(probs)
-  options=getOptions(positions[3],edges)
-  print("Move 1 options (plus 0 for search):")
-  #print(options)
-  #print(positions)
+
   ###############################
   #PRETREATEMENT OF NETWORK INFO#
   ###############################
@@ -331,18 +322,20 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #END OF PROBABILITY CALCULATION#
   ################################
   
-  #To Michael and Asa: Don't forget to ajust the probas if you check a waterhole, to pass the vector to the next turn
-  #print(probas)
-  #print(probas[2])
   
+  #################
+  #ACTION DECISION#
+  #################
   #BFS-based Move
-  moveResult = bfsBased(probas, positions, edges)
+  #moveResult = bfsBased(probas, positions, edges)
   
   #Local Search Move
-  #moveResult = makeMoveLocalSearch(probas, positions, edges)
+  moveResult = makeMoveLocalSearch(probas, positions, edges)
+  ########################
+  #END OF ACTION DECISION#
+  ########################
   
   moveInfo[['moves']] = moveResult$move
-  #moveInfo[['moves']] = c(0, 0)
   moveInfo[['mem']][["previousProbabilities"]] = moveResult$probas
   return(moveInfo)
 }
