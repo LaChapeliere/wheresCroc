@@ -1,8 +1,5 @@
 #Our main function is named 'markovMove'
 
-#It can be run either with BFS-search for the move, or local search
-#To switch between the two options, comment/uncomment the corresponding lines at the end of the main function
-
 #Set the flagcheck to 0, use counter the turn
 flagCheck <<- 0
 
@@ -274,7 +271,7 @@ makeMoveLocalSearch <- function(probas, positions, edges) {
   return(list("move"=move,"probas"=probas))
 }
 
-
+#use this function to run the solution
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #moveInfo = list(moves = c('the two moves to make'), mem = list('any info we want to store')
   #readings = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc')
@@ -327,10 +324,10 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #ACTION DECISION#
   #################
   #BFS-based Move
-  #moveResult = bfsBased(probas, positions, edges)
+  moveResult = bfsBased(probas, positions, edges)
   
   #Local Search Move
-  moveResult = makeMoveLocalSearch(probas, positions, edges)
+  #moveResult = makeMoveLocalSearch(probas, positions, edges)
   ########################
   #END OF ACTION DECISION#
   ########################
