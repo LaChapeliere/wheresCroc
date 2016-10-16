@@ -274,7 +274,7 @@ makeMoveLocalSearch <- function(probas, positions, edges) {
   return(list("move"=move,"probas"=probas))
 }
 
-
+#use this function to run the solution
 markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #moveInfo = list(moves = c('the two moves to make'), mem = list('any info we want to store')
   #readings = c('salinity reading from Croc', 'phosphate reading from Croc', 'nitrogen reading from Croc')
@@ -282,15 +282,9 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #edges = matrix('edges paths between waterholes, first column is one extremity of the edge, second column is the other extremity, every row is one edge')
   #probs = list(salinity = matrix('mean and standard deviation of readings for salinity, each row is a waterhole, first column is mean, second column is standard deviation'), phosphate = matrix('mean and standard deviation of readings for phosphate, each row is a waterhole, first column is mean, second column is standard deviation'), nitrogen = matrix('mean and standard deviation of readings for nitrogen, each row is a waterhole, first column is mean, second column is standard deviation'))
   
-  #print(moveInfo)
-  #print(readings)
-  #print(positions)
-  #print(edges)
-  #print(probs)
+  
   options=getOptions(positions[3],edges)
   print("Move 1 options (plus 0 for search):")
-  #print(options)
-  #print(positions)
   ###############################
   #PRETREATEMENT OF NETWORK INFO#
   ###############################
@@ -338,7 +332,7 @@ markovMove <- function(moveInfo, readings, positions, edges, probs) {
   #BFS-based Move
   moveResult = bfsBased(probas, positions, edges)
   
-  #Local Search Move
+  #Local Search Move, uncomment the line below to use this search
   #moveResult = makeMoveLocalSearch(probas, positions, edges)
   
   moveInfo[['moves']] = moveResult$move
